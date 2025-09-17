@@ -1,7 +1,11 @@
 import './App.css'
-import {Button} from "./Button.tsx";
-import {filterValues} from "./App.tsx";
-import {useState} from 'react'
+// import {Button} from "./Button.tsx";
+import {FilterValues, Todolist} from "./App.tsx";
+import {AddItemForm} from "./AddItemForm.tsx";
+import {EditableSpan} from "./EditableSpan.tsx";
+import {Button, Checkbox, IconButton, ListItem, List, Box} from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
+import {containerSx, getListItemSx} from "./TodolistItem.styles.ts";
 
 
 export type Task = {
@@ -11,90 +15,102 @@ export type Task = {
 }
 
 type TodolistItemType = {
-    title: string
+    todolistId: Todolist["id"]
+    title: Todolist["title"],
     tasks: Task[]
-    filter: filterValues
+    filter: FilterValues
     data?: string
-    deleteTask: (taskId: Task["id"]) => void // taskId(можно что угодно написать): Task["id"] - тип данных на входе, void(пустота) - тип данных на выходе
-    chengeFilter: (filter: filterValues) => void
-    createTask: (title: Task["title"]) => void
-    changeTaskStatus: (taskId: Task["id"], newTaskStatus: Task["isDone" ]) => void
+    deleteTask: (taskId: Task["id"], todolistId: Todolist["id"]) => void // taskId(можно что угодно написать): Task["id"] - тип данных на входе, void(пустота) - тип данных на выходе
+    createTask: (title: Task["title"], todolistId: Todolist["id"]) => void
+    deleteTodolist: (todolistId: Todolist["id"]) => void
+    changeTodolistFilter: (filter: FilterValues, todolistId: Todolist["id"]) => void
+    changeTaskStatus: (taskId: Task["id"], newTaskStatus: Task["isDone" ], todolistId: Todolist["id"]) => void
+    changeTaskTitle: (taskId: Task["id"], newTitle: Task["title" ], todolistId: Todolist["id"]) => void
+    changeTodolistTitle: (newTitle: Todolist["title" ], todolistId: Todolist["id"]) => void
 }
 
 export const TodolistItem = (props: TodolistItemType) => {
-    const [taskTitle, setTaskTitle] = useState('') // управляемый input с помощью useState дает возможность организовывать управления данными полученными от пользователя, еще до их отправки, прорабатывая разные сценарии при вводе
-    const [error, setError] = useState(false)
 
-    const createTaskHandler = () => { //обертка, у  нас  есть  приходящие данные в пропсы компоненты
-        const trimmedTitle = taskTitle.trim()//  проверка  состоит строка  из одних  пробелов или там  что-то есть , обрезает  пробелы
-        if (trimmedTitle) { // если  что-то  есть после обрезания пробелов,  то добавляем
-            props.createTask(taskTitle) // в функцию создания переддает полученные данные с поля ввода
-        } else {
-            setError(true)
-        }
-        setTaskTitle("")
+    const tasksList = props.tasks.length === 0 ? (
+        <p>
+            тасок нет
+        </p>
+    ) : (
+        <List>
+            {props.tasks.map((task, index) => {
+                const changeTaskTitleHandler = (title: string) => {
+                    props.changeTaskTitle(task.id, title, props.todolistId)
+                }// changeTaskStatus - сюда передает новое название, Id таски и Id листа
+
+                return (
+                    <ListItem disablePadding key={index}
+                              sx={getListItemSx(task.isDone)}>
+                        <Box>
+                            <Checkbox
+                                onChange={(e) => props.changeTaskStatus(task.id, e.target.checked, props.todolistId)}
+                                checked={task.isDone}
+                                size="small"
+                                color="primary"
+                            >
+                            </Checkbox>
+                            <span className={task.isDone ? "task-done" : "task"}>
+                            <EditableSpan title={task.title}
+                                          changeItemTitle={changeTaskTitleHandler} // changeTaskTitleHandler - сюда приходит новое название
+                            />
+                        </span>
+                        </Box>
+                        <IconButton
+                            onClick={() => props.deleteTask(task.id, props.todolistId)} // в определенном листе удалить тукую-то таску
+
+                        >
+                            <DeleteIcon/>
+                        </IconButton>
+                    </ListItem>
+
+                )
+            })}
+        </List>
+    )
+
+
+    const createTaskHandler = (taskTitle: string) => { // Для нового листа получили название и теперь его создаем
+        props.createTask(taskTitle, props.todolistId) // в функцию создания переддает полученные данные с поля ввода
+
     }
-
+    const changeTodolistTitleHandler = (newTitle: string) => props.changeTodolistTitle(newTitle, props.todolistId)
     return (
         <div>
-            <h3>{props.title}</h3>
+            <h3>
+                <EditableSpan title={props.title} changeItemTitle={changeTodolistTitleHandler}/>
+                <Button title="x"/>
+                <IconButton onClick={() => props.deleteTodolist(props.todolistId)}>
+                    <DeleteIcon/>
+                </IconButton>
+            </h3>
+            <AddItemForm createItem={createTaskHandler}/> {/*Главная задача дать название листа*/}
+            {tasksList}
             <div>
-                <input
-                    placeholder="max title length 15 characters"
-                    value={taskTitle} // из стайда передаем что поьлзователь ввел в поле
-                    onChange={(e) =>{
-                        error && setError(false)
-                        setTaskTitle(e.currentTarget.value)
-                    }} // получаем значение из поля и складываем в стейт, каждйк раз перересовка всего при вводе каждого символа
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            createTaskHandler()
-                        }
-                    }}
-                    className={error ? "taskInputError" : ""}
-                />
-                <Button title={"+"}
-                        disabled={!taskTitle} // если ничего нет в инпуте, то кнопка не нажимается
-                        onClick={createTaskHandler} // сюда передаются  посредники, что бы компонет оставался чистым
-                />
-                {error && !taskTitle && <div>Please, enter title</div>}
-                {taskTitle.length > 15 && (<div style={{color: "red"}}>Title length too long</div>)}
-                {!!taskTitle.length && taskTitle.length <= 15 && (
-                    <div>Rest amount of charters {15 - taskTitle.length}</div>)}
-                {error && <div style={{color: "red"}}>Enter valid title</div> // если много пробелов будет  ошибка
-                }
+                <Box sx={containerSx}>
+                    <Button
+                        onClick={() => props.changeTodolistFilter("all", props.todolistId)} // как бы снизу  на верх передаем "all"  пропсы
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                    >All</Button>
+                    <Button
+                        onClick={() => props.changeTodolistFilter("all", props.todolistId)} // как бы снизу  на верх передаем "all"  пропсы
+                        size="small"
+                        variant="outlined"
+                        color={"primary"}
+                    >active</Button>
+                    <Button
+                        onClick={() => props.changeTodolistFilter("all", props.todolistId)} // как бы снизу  на верх передаем "all"  пропсы
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                    >completed</Button>
+                </Box>
 
-            </div>
-            {props.tasks.length === 0 ? (
-                <p>
-                    тасок нет
-                </p>
-            ) : (
-                <ul>
-                    {props.tasks.map((task, index) => {
-
-                        return (
-                            <li key={index}>
-                                <input
-                                    onChange={(e) => props.changeTaskStatus(task.id, e.target.checked)}
-                                    type="checkbox" checked={task.isDone}
-                                />
-                                <span className={task.isDone ? "task-done" : "task"}>{task.title}</span>
-                                <Button onClick={() => props.deleteTask(task.id)}
-                                        title="X"/>
-                            </li>
-                        )
-                    })}
-                </ul>
-            )}
-            <div>
-                <Button className={props.filter === "all" ? "btn-filter-active" : ""} title={"all"}
-                        onClick={() => props.chengeFilter("all")} // как бы снизу  на верх передаем "all"  пропсы
-                />
-                <Button className={props.filter === "active" ? "btn-filter-active" : ""} title={"active"}
-                        onClick={() => props.chengeFilter("active")}/>
-                <Button className={props.filter === "completed" ? "btn-filter-active" : ""} title={"completed"}
-                        onClick={() => props.chengeFilter("completed")}/>
             </div>
             <div>{props.data}</div>
         </div>

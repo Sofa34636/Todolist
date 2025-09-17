@@ -1,11 +1,13 @@
 .app {
-  padding: 30px;
+  width: 100vw;
   display: flex;
+  flex-direction: column;
 }
 
-.app > div {
-  margin-right: 50px;
-}
+/*.app > div {*/
+/*  margin-right: 50px;*/
+/*}*/
+
 
 .task  {
   font-weight: bold;
