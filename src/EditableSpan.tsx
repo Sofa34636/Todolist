@@ -1,41 +1,42 @@
-import {useState} from 'react';
-import {TextField} from "@mui/material";
+import TextField from '@mui/material/TextField'
+import {type ChangeEvent, useState} from 'react'
 
-
-type PropsType = {
-    title: string, // принимаем текст
-    changeItemTitle: (newTitle: string) => void, // возвращаем измененный
+type Props = {
+    value: string // принимаем текст
+    onChange: (title: string) => void // возвращаем измененный
 }
 
-export const EditableSpan = ({title, changeItemTitle}: PropsType) => {
-    const [isEditMode, SetIsEditMode] = useState<boolean>(false)
-    const [itemTitle, setitemTitle] = useState(title)
+export const EditableSpan = ({ value, onChange }: Props) => {
+    const [title, setTitle] = useState(value)
+    const [isEditMode, setIsEditMode] = useState(false)
 
-    const onEditMode = () => {
-        SetIsEditMode(true)
+    const turnOnEditMode = () => {
+        setIsEditMode(true)
     }
-    const offEditMode = () => {
-        SetIsEditMode(false) // убираем возможность ввода
-        changeItemTitle(itemTitle) // родителю закидываем содержимое     локального стейта
+
+    const turnOffEditMode = () => {
+        setIsEditMode(false) // убираем возможность ввода
+        onChange(title) // родителю закидываем содержимое     локального стейта
     }
+
+    const changeTitle = (event: ChangeEvent<HTMLInputElement>) => {
+        setTitle(event.currentTarget.value)
+    }
+
     return (
-        <div>
-            {isEditMode
-                ? <TextField
-                    variant="standard"
-                    autoFocus// автоматически ставит курсов
-                    onBlur={offEditMode} // вызывается при окончании изменения
-                    value={itemTitle}
-                    onChange={(e) => {
-                        setitemTitle(e.currentTarget.value)
-                    }}
+        <>
+            {isEditMode ? (
+                <TextField variant={'outlined'}
+                           value={title}
+                           size={'small'}
+                           onChange={changeTitle}
+                           onBlur={turnOffEditMode} // вызывается при окончании изменения
+                           autoFocus // автоматически ставит курсов
                 />
-
-
-                : <span onDoubleClick={onEditMode}>{title} {/* при 2 нажалии меняеи на true */}
-    </span>
-            }
-        </div>);
-};
-
-
+            ) : (
+                <span onDoubleClick={turnOnEditMode}>{value} {/* при 2 нажалии меняеи на true */}
+            </span>
+            )}
+        </>
+    )
+}
