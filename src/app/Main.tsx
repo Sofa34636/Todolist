@@ -1,11 +1,11 @@
 import Container from "@mui/material/Container";
 import {Grid} from "@mui/material";
-import {CreateItemForm} from "@/CreateItemForm.tsx";
+import {CreateItemForm} from "@/common/components/CreateItemForm/CreateItemForm.tsx";
 import {useDispatch} from "react-redux";
 import {
     createTodolistAC,
-} from "@/model/todolists-reducer.ts";
-import {Todolists} from "@/Todolists.tsx";
+} from "@/features/todolists/model/todolists-reducer.ts";
+import {Todolists} from "@/features/todolists/ui/Todolists/Todolists.tsx";
 
 export const Main = () => {
 

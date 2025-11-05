@@ -1,8 +1,8 @@
 import {Grid} from "@mui/material";
 import Paper from "@mui/material/Paper";
-import {TodolistItem} from "@/TodolistItem.tsx";
+import {TodolistItem} from "@/features/todolists/ui/Todolists/TodolistItem/TodolistItem.tsx";
 import {useAppSelector} from "@/common/hooks/useAppSelector.ts";
-import {selectTodolist} from "@/model/todolists-selectors.ts";
+import {selectTodolist} from "@/features/todolists/model/todolists-selectors.ts";
 
 export const Todolists = () => {
     // следит за массивом, чтобы при изменении перерисовывать

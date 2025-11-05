@@ -1,8 +1,9 @@
 import Box from "@mui/material/Box";
-import {containerSx} from "@/TodolistItem.styles.ts";
+
 import Button from "@mui/material/Button";
 import {useDispatch} from "react-redux";
-import {changeTodolistFilterAC, FilterValues, Todolist} from "@/model/todolists-reducer.ts";
+import {changeTodolistFilterAC, FilterValues, Todolist} from "@/features/todolists/model/todolists-reducer.ts";
+import {containerSx} from "@/common/styles/container.styles.ts";
 
 
 type Props = {
